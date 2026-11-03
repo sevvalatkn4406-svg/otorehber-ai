@@ -34,7 +34,7 @@ export default function Home() {
 
               <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed mb-8">
                 Bütçene, sürüş alışkanlıklarına ve aile ihtiyaçlarına en uygun
-                modeli şeffaf teknik verilerle keşfet. Yapay zekâ destekli analiz
+                modeli örnek veriler ve açık varsayımlarla keşfet. Yapay zekâ destekli analiz
                 sayesinde araçları kıyasla ve bakım adımlarını kolayca planla.
               </p>
 
@@ -82,7 +82,7 @@ export default function Home() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-                  Objektif Teknik Kriterler
+                  Örnek veriler ve açık varsayımlar
                 </span>
               </div>
             </div>
@@ -108,19 +108,19 @@ export default function Home() {
 
                 <div className="pt-4 border-t border-border grid grid-cols-3 gap-2 text-center">
                   <div className="p-2.5 rounded-xl bg-surface-elevated">
-                    <span className="block text-[11px] text-muted">Menzil</span>
+                    <span className="block text-[11px] text-muted">Tahmini menzil</span>
                     <span className="font-heading font-bold text-sm text-main">
                       523 km
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-surface-elevated">
-                    <span className="block text-[11px] text-muted">Güç</span>
+                    <span className="block text-[11px] text-muted">Tahmini güç</span>
                     <span className="font-heading font-bold text-sm text-main">
                       218 HP
                     </span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-surface-elevated">
-                    <span className="block text-[11px] text-muted">Güvenlik</span>
+                    <span className="block text-[11px] text-muted">Tahmini güvenlik puanı</span>
                     <span className="font-heading font-bold text-sm text-amber-500">
                       ★ 5.0
                     </span>
@@ -179,7 +179,7 @@ export default function Home() {
                 Aile Aracı Arayanlar
               </h3>
               <p className="text-sm text-muted leading-relaxed">
-                Euro NCAP 5 yıldızlı güvenlik skorları, 500+ litre geniş bagaj hacmi, ferah arka koltuk diz mesafesi ve ISOFIX kolaylığı sunan alternatifler.
+                Tahmini güvenlik puanı yüksek ve 500 litreden fazla bagaj hacmi sunan örnek alternatifler.
               </p>
             </div>
             <div className="mt-6 pt-4 border-t border-border text-xs font-semibold text-sky-500">
@@ -267,7 +267,7 @@ export default function Home() {
                 Akıllı Analiz & Eşleştirme
               </h3>
               <p className="text-sm text-muted leading-relaxed">
-                Yapay zekâ motoru; motor gücü, yakıt tüketimi, Euro NCAP güvenlik puanı ve yürütme maliyeti parametrelerini tarayarak en uygun alternatifleri eşleştirir.
+                Yapay zekâ motoru; motor gücü, yakıt tüketimi, tahmini güvenlik puanı ve varsayımsal yürütme maliyeti gibi örnek ölçütleri kullanarak alternatifleri eşleştirir.
               </p>
             </div>
 
@@ -280,7 +280,7 @@ export default function Home() {
                 Karşılaştır ve Karar Ver
               </h3>
               <p className="text-sm text-muted leading-relaxed">
-                Önerilen modellerin 3 artı ve eksi yönünü, tahmini fiyat aralıklarını ve teknik özelliklerini yan yana kıyaslayıp en doğru karara var.
+                Önerilen modellerin artı ve eksi yönlerini, tahmini fiyat aralıklarını ve teknik özelliklerini yan yana kıyaslayarak bilinçli karar vermene yardımcı ol.
               </p>
             </div>
           </div>
@@ -364,7 +364,7 @@ export default function Home() {
                 Dijital Garajım
               </h3>
               <p className="text-sm text-muted leading-relaxed mb-4">
-                Kullandığınız veya ilgilendiğiniz araç modellerini favori listenize ekleyin, teknik verilerini ve tahmini amortismanını arşivleyin.
+                Kullandığınız veya ilgilendiğiniz araç modellerini favori listenize ekleyip temel teknik verilerini takip edin.
               </p>
               <Link href="/araclar" className="text-xs font-bold text-amber-500 hover:underline">
                 Garajına Araç Ekle &rarr;

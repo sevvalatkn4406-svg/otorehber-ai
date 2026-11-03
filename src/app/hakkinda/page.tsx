@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 export const metadata: Metadata = {
   title: "Hakkında",
-  description: "OtoRehber AI projesinin amacı, vizyonu ve şeffaf veri yaklaşımı.",
+  description: "OtoRehber AI projesinin amacı, kapsamı ve veri yaklaşımı.",
 };
 
 export default function HakkindaPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div className="p-8 sm:p-12 rounded-3xl bg-surface border border-border shadow-sm">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+      <div className="p-6 sm:p-12 rounded-3xl bg-surface border border-border shadow-sm">
         <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 mb-4">
           Proje Hakkında
         </span>
@@ -18,21 +19,27 @@ export default function HakkindaPage() {
         </h1>
         <div className="space-y-4 text-muted text-base leading-relaxed">
           <p>
-            OtoRehber AI; araç satın alma arifesinde olan sürücüler ile mevcut araç sahiplerine yönelik, şeffaf teknik veriler ve yapay zekâ analizleriyle rehberlik etmeyi amaçlayan bağımsız bir web platformudur.
+            OtoRehber AI; ilk kez araç alacaklar, aile aracı arayanlar, performans meraklıları ve araç sahipleri için araçları karşılaştırmaya ve bakım adımlarını planlamaya yardımcı olan bir öğrenci projesidir.
           </p>
           <p>
-            Platformumuz, kullanıcıların bütçe, yakıt ekonomisi, güvenlik puanları (Euro NCAP) ve bagaj kapasitesi gibi somut kriterleri göz önünde bulundurarak en doğru aracı seçmelerine yardımcı olur.
+            Öneriler; bütçe, kullanım alışkanlıkları, yakıt ekonomisi, tahmini güvenlik puanı ve bagaj kapasitesi gibi ölçütleri açık varsayımlarla ele alır. Araç verileri ve fiyat aralıkları örnek ve tahminidir; resmi üretici, Euro NCAP veya bayi verisi olarak değerlendirilmemelidir.
           </p>
-          <div className="p-4 rounded-xl bg-surface-elevated border border-border text-xs text-muted">
-            <span className="font-semibold text-main">Önemli Hatırlatma:</span> Platformda sunulan araç teknik özellikleri, tahmini fiyat aralıkları ve bakım maliyetleri eğitim ve örnekleme amaçlı hazırlanmış olup resmi bayi veya garanti taahhüdü içermez.
+          <div className="p-4 rounded-xl bg-surface-elevated border border-border text-sm text-muted">
+            <span className="font-semibold text-main">Proje notu:</span> YZO 205 Operasyonel Yapay Zekâ dersi kapsamında geliştirilmiş öğrenci projesidir.
+          </div>
+          <div className="p-4 rounded-xl bg-surface-elevated border border-border text-sm text-muted">
+            Yapay zekâ yanıtları bilgilendirme amaçlıdır. Araç satın alma ve bakım kararlarında üretici bilgilerini ve yetkili servis önerilerini ayrıca kontrol edin.
           </div>
         </div>
 
+        <div className="mt-10 pt-8 border-t border-border">
+          <h2 className="text-2xl font-bold font-heading text-main mb-2">İletişim ve geri bildirim</h2>
+          <p className="text-sm text-muted mb-5">Öneri ve hata bildirimlerini form üzerinden iletebilirsiniz.</p>
+          <FeedbackForm />
+        </div>
+
         <div className="mt-8 pt-6 border-t border-border">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors shadow-sm"
-          >
+          <Link href="/" className="inline-flex min-h-11 items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors shadow-sm">
             &larr; Ana Sayfaya Dön
           </Link>
         </div>
