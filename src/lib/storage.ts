@@ -228,3 +228,106 @@ export function useCompare() {
     toggleCompare,
   };
 }
+
+// ==========================================
+// 3. MAINTENANCE (BAKIM TAKVİMİ) STORE
+// ==========================================
+export interface MaintenanceRecord {
+  aracAdi: string;
+  guncelKm: number;
+  sonYagTarihi: string; // YYYY-MM-DD
+  sonYagKm: number;
+  sonLastikTarihi: string; // YYYY-MM-DD
+  muayeneTarihi: string; // YYYY-MM-DD
+  sigortaTarihi: string; // YYYY-MM-DD
+}
+
+export const DEFAULT_MAINTENANCE_RECORD: MaintenanceRecord = {
+  aracAdi: "",
+  guncelKm: 0,
+  sonYagTarihi: "",
+  sonYagKm: 0,
+  sonLastikTarihi: "",
+  muayeneTarihi: "",
+  sigortaTarihi: "",
+};
+
+const MAINTENANCE_KEY = "otorehber_maintenance_record";
+
+let maintenanceListeners: Array<() => void> = [];
+let cachedMaintenanceRaw: string | null = null;
+let cachedMaintenanceParsed: MaintenanceRecord = DEFAULT_MAINTENANCE_RECORD;
+
+function emitMaintenanceChange() {
+  for (const listener of maintenanceListeners) {
+    listener();
+  }
+}
+
+function subscribeMaintenance(callback: () => void) {
+  maintenanceListeners.push(callback);
+
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === MAINTENANCE_KEY) {
+      emitMaintenanceChange();
+    }
+  };
+
+  window.addEventListener("storage", handleStorage);
+  return () => {
+    maintenanceListeners = maintenanceListeners.filter((l) => l !== callback);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+function getMaintenanceSnapshot(): MaintenanceRecord {
+  if (typeof window === "undefined") {
+    return DEFAULT_MAINTENANCE_RECORD;
+  }
+
+  try {
+    const raw = localStorage.getItem(MAINTENANCE_KEY);
+    if (raw === cachedMaintenanceRaw) {
+      return cachedMaintenanceParsed;
+    }
+
+    cachedMaintenanceRaw = raw;
+    if (!raw) {
+      cachedMaintenanceParsed = DEFAULT_MAINTENANCE_RECORD;
+    } else {
+      const parsed = JSON.parse(raw);
+      cachedMaintenanceParsed = { ...DEFAULT_MAINTENANCE_RECORD, ...parsed };
+    }
+    return cachedMaintenanceParsed;
+  } catch {
+    cachedMaintenanceRaw = null;
+    cachedMaintenanceParsed = DEFAULT_MAINTENANCE_RECORD;
+    return cachedMaintenanceParsed;
+  }
+}
+
+function getMaintenanceServerSnapshot(): MaintenanceRecord {
+  return DEFAULT_MAINTENANCE_RECORD;
+}
+
+export function useMaintenanceRecord() {
+  const record = useSyncExternalStore(
+    subscribeMaintenance,
+    getMaintenanceSnapshot,
+    getMaintenanceServerSnapshot
+  );
+
+  const saveRecord = (newRecord: Partial<MaintenanceRecord>) => {
+    try {
+      const current = getMaintenanceSnapshot();
+      const updated: MaintenanceRecord = { ...current, ...newRecord };
+      const raw = JSON.stringify(updated);
+      localStorage.setItem(MAINTENANCE_KEY, raw);
+      cachedMaintenanceRaw = raw;
+      cachedMaintenanceParsed = updated;
+      emitMaintenanceChange();
+    } catch {}
+  };
+
+  return { record, saveRecord };
+}
