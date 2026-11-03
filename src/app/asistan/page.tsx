@@ -66,7 +66,7 @@ function AsistanContent() {
     setOneriYukleniyor(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     try {
       const payload = {
@@ -101,7 +101,7 @@ function AsistanContent() {
       setOneriSonucu(json);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        setOneriHata("İstek zaman aşımına uğradı (15 saniye). Lütfen tekrar deneyiniz.");
+        setOneriHata("İstek zaman aşımına uğradı (20 saniye). Lütfen tekrar deneyiniz.");
       } else {
         const msg = err instanceof Error ? err.message : "Öneri hazırlanırken bir hata oluştu.";
         setOneriHata(msg);
@@ -119,7 +119,7 @@ function AsistanContent() {
     setBakimYukleniyor(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     try {
       const payload = {
@@ -153,7 +153,7 @@ function AsistanContent() {
       setBakimSonucu(json);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        setBakimHata("İstek zaman aşımına uğradı (15 saniye). Lütfen tekrar deneyiniz.");
+        setBakimHata("İstek zaman aşımına uğradı (20 saniye). Lütfen tekrar deneyiniz.");
       } else {
         const msg = err instanceof Error ? err.message : "Bakım planı alınırken bir hata oluştu.";
         setBakimHata(msg);
@@ -367,6 +367,7 @@ function AsistanContent() {
                 <div>
                   <span className="font-semibold block">Hata Oluştu</span>
                   <span>{oneriHata}</span>
+                  <button type="button" disabled={oneriYukleniyor} onClick={() => void handleOneriSubmit({ preventDefault() {} } as React.FormEvent<HTMLFormElement>)} className="ml-2 font-semibold underline disabled:opacity-50">Tekrar dene</button>
                 </div>
               </div>
             )}
@@ -610,6 +611,7 @@ function AsistanContent() {
                 <div>
                   <span className="font-semibold block">Hata Oluştu</span>
                   <span>{bakimHata}</span>
+                  <button type="button" disabled={bakimYukleniyor} onClick={() => void handleBakimSubmit({ preventDefault() {} } as React.FormEvent<HTMLFormElement>)} className="ml-2 font-semibold underline disabled:opacity-50">Tekrar dene</button>
                 </div>
               </div>
             )}
@@ -663,6 +665,11 @@ function AsistanContent() {
                       </>
                     )}
                   </div>
+                  {bakimSonucu.not && (
+                    <span className="text-[11px] text-muted italic max-w-xs text-right">
+                      {bakimSonucu.not}
+                    </span>
+                  )}
                   <span className="text-xs font-bold text-main">
                     {bakimSonucu.veri?.aracBilgisi}
                   </span>
