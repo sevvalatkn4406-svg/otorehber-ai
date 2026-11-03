@@ -13,7 +13,9 @@ export function CompareFloatingBar() {
   const selectedCars = carsData.filter((c) => compareList.includes(c.id));
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-40 max-w-4xl mx-auto animate-in slide-in-from-bottom-5 duration-200">
+    <>
+    <div className="h-40 sm:hidden" aria-hidden="true" />
+    <div className="fixed bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 z-40 max-w-4xl mx-auto animate-in slide-in-from-bottom-5 duration-200">
       <div className="p-3 sm:p-4 rounded-2xl bg-surface/95 backdrop-blur-md border border-primary/40 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* Left: Info & Chips */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -35,7 +37,7 @@ export function CompareFloatingBar() {
                   type="button"
                   onClick={() => removeFromCompare(car.id)}
                   aria-label={`${car.marka} ${car.model} karşılaştırmadan çıkar`}
-                  className="text-muted hover:text-rose-500 transition-colors ml-0.5"
+                  className="min-h-11 min-w-11 flex items-center justify-center text-muted hover:text-rose-500 transition-colors ml-0.5"
                 >
                   &times;
                 </button>
@@ -49,14 +51,14 @@ export function CompareFloatingBar() {
           <button
             type="button"
             onClick={clearCompare}
-            className="px-3 py-2 rounded-xl text-xs font-semibold text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+            className="min-h-11 px-3 py-2 rounded-xl text-xs font-semibold text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
           >
             Temizle
           </button>
 
           <Link
             href="/karsilastir"
-            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs transition-all shadow-md shadow-primary/25"
+            className="min-h-11 inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs transition-all shadow-md shadow-primary/25"
           >
             <span>Karşılaştır ({selectedCars.length})</span>
             <span aria-hidden="true">&rarr;</span>
@@ -64,5 +66,6 @@ export function CompareFloatingBar() {
         </div>
       </div>
     </div>
+    </>
   );
 }

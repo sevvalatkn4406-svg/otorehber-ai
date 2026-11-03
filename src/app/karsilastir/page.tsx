@@ -86,6 +86,22 @@ export default function KarsilastirPage() {
     ? Math.min(...Array.from(costsMap.values()))
     : null;
 
+  const mobileRows: { label: string; cells: { value: string; best?: boolean }[] }[] = [
+    { label: "Tahmini fiyat", cells: selectedCars.map((car) => ({ value: `${formatPrice(car.fiyatMin)} – ${formatPrice(car.fiyatMax)}`, best: minPrice === car.fiyatMin })) },
+    { label: "Kasa tipi", cells: selectedCars.map((car) => ({ value: car.kasaTipi })) },
+    { label: "Yakıt / enerji", cells: selectedCars.map((car) => ({ value: car.yakit })) },
+    { label: "Şanzıman / vites", cells: selectedCars.map((car) => ({ value: car.vites })) },
+    { label: "Motor gücü", cells: selectedCars.map((car) => ({ value: `${car.motorGucuHp} HP`, best: maxPower === car.motorGucuHp })) },
+    { label: "Karma tüketim", cells: selectedCars.map((car) => ({ value: `${car.ortalamaTuketim} ${car.yakit === "elektrik" ? "kWh/100km" : "L/100km"}`, best: minConsumption === car.ortalamaTuketim })) },
+    { label: "Elektrikli menzil", cells: selectedCars.map((car) => ({ value: car.menzilKm ? `${car.menzilKm} km` : "—" })) },
+    { label: "Bagaj hacmi", cells: selectedCars.map((car) => ({ value: `${car.bagajLitre} litre`, best: maxBoot === car.bagajLitre })) },
+    { label: "Koltuk sayısı", cells: selectedCars.map((car) => ({ value: `${car.koltukSayisi} kişilik` })) },
+    { label: "Euro NCAP güvenlik", cells: selectedCars.map((car) => ({ value: `${"★".repeat(car.guvenlikPuani)} (${car.guvenlikPuani}/5)`, best: maxSafety === car.guvenlikPuani && car.guvenlikPuani === 5 })) },
+    { label: "Yıllık masraf (15.000 km)", cells: selectedCars.map((car) => { const cost = costsMap.get(car.id) ?? 0; return { value: `${formatPrice(cost)} / yıl (yakıt + bakım + sigorta)`, best: minCost === cost }; }) },
+    { label: "Öne çıkan artılar", cells: selectedCars.map((car) => ({ value: car.artilar.join(" · ") })) },
+    { label: "Dikkat edilmesi gerekenler", cells: selectedCars.map((car) => ({ value: car.eksiler.join(" · ") })) },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-20">
       {/* Header & Controls */}
@@ -106,7 +122,7 @@ export default function KarsilastirPage() {
           {selectedCars.length < 3 && (
             <Link
               href="/araclar"
-              className="px-4 py-2 rounded-xl bg-surface-elevated hover:bg-border text-main font-semibold text-xs border border-border transition-colors"
+              className="min-h-11 px-4 py-2 rounded-xl bg-surface-elevated hover:bg-border text-main font-semibold text-xs border border-border transition-colors"
             >
               + Yeni Araç Ekle
             </Link>
@@ -115,15 +131,31 @@ export default function KarsilastirPage() {
           <button
             type="button"
             onClick={clearCompare}
-            className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-semibold text-xs transition-colors"
+            className="min-h-11 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-semibold text-xs transition-colors"
           >
             Seçimi Temizle
           </button>
         </div>
       </div>
 
-      {/* Horizontally scrollable container on mobile */}
-      <div className="overflow-x-auto rounded-3xl border border-border bg-surface shadow-sm">
+      <section className="md:hidden mb-8">
+        <div className="sticky top-16 z-30 grid gap-2 bg-background/95 backdrop-blur p-2 border-b border-border" style={{ gridTemplateColumns: `repeat(${selectedCars.length}, minmax(0, 1fr))` }} aria-label="Seçili araçlar">
+          {selectedCars.map((car) => <div key={car.id} className="min-w-0 rounded-xl border border-border bg-surface p-2 text-center"><span className="block text-[10px] uppercase font-bold text-primary truncate">{car.marka}</span><span className="block text-xs font-semibold text-main line-clamp-2 break-words">{car.model}</span></div>)}
+        </div>
+        <div className="space-y-3 pt-3">
+          {mobileRows.map((row) => <article key={row.label} className="rounded-2xl border border-border bg-surface p-3 min-w-0">
+            <h2 className="text-xs uppercase tracking-wide font-bold text-muted mb-2">{row.label}</h2>
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${selectedCars.length}, minmax(0, 1fr))` }}>
+              {row.cells.map((cell, index) => <div key={selectedCars[index].id} className={`min-w-0 rounded-xl p-2 text-xs break-words [overflow-wrap:anywhere] ${cell.best ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/30 font-semibold" : "bg-surface-elevated text-main"}`}>
+                <span className="block text-[10px] text-muted truncate mb-1">{selectedCars[index].marka} {selectedCars[index].model}</span>{cell.value}{cell.best && <span className="block mt-1 text-[10px]">En iyi değer</span>}
+              </div>)}
+            </div>
+          </article>)}
+        </div>
+      </section>
+
+      {/* Desktop comparison table */}
+      <div className="hidden md:block overflow-x-auto rounded-3xl border border-border bg-surface shadow-sm">
         <table className="w-full min-w-[650px] border-collapse text-left text-sm">
           {/* Table Header: Car Silhouettes & Names */}
           <thead>
@@ -147,7 +179,7 @@ export default function KarsilastirPage() {
                           type="button"
                           onClick={() => removeFromCompare(car.id)}
                           aria-label={`${car.marka} ${car.model} karşılaştırmadan çıkar`}
-                          className="text-xs text-muted hover:text-rose-500 p-1 rounded hover:bg-rose-500/10 transition-colors"
+                          className="min-h-11 min-w-11 text-xs text-muted hover:text-rose-500 p-1 rounded hover:bg-rose-500/10 transition-colors"
                           title="Karşılaştırmadan çıkar"
                         >
                           ✕ Çıkar

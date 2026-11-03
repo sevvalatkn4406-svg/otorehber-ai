@@ -53,7 +53,7 @@ export function CarCard({ car }: CarCardProps) {
             onClick={() => toggleFavorite(car.id)}
             aria-label={favorited ? "Garajımdan Çıkar" : "Garajıma Ekle"}
             title={favorited ? "Garajımdan Çıkar" : "Garajıma Ekle"}
-            className={`p-2 rounded-xl transition-all ${
+            className={`min-h-11 min-w-11 flex items-center justify-center p-2 rounded-xl transition-all ${
               favorited
                 ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
                 : "bg-surface-elevated text-muted hover:text-rose-500 hover:bg-rose-500/10"
@@ -89,7 +89,7 @@ export function CarCard({ car }: CarCardProps) {
 
         {/* Model Title */}
         <Link href={`/araclar/${car.id}`} className="block group-hover:text-primary transition-colors">
-          <h2 className="text-lg font-bold font-heading text-main tracking-tight line-clamp-1 mb-2">
+          <h2 className="text-lg font-bold font-heading text-main tracking-tight line-clamp-2 break-words [overflow-wrap:anywhere] mb-2">
             {car.model}
           </h2>
         </Link>
@@ -119,7 +119,7 @@ export function CarCard({ car }: CarCardProps) {
       <div>
         <div className="pt-3 border-t border-border mb-3">
           <span className="block text-[11px] text-muted">Tahmini Fiyat Aralığı</span>
-          <span className="font-heading font-bold text-sm text-main">
+          <span className="font-heading font-bold text-sm text-main break-words [overflow-wrap:anywhere]">
             {formatPrice(car.fiyatMin)} - {formatPrice(car.fiyatMax)}
           </span>
         </div>
@@ -127,7 +127,7 @@ export function CarCard({ car }: CarCardProps) {
         <div className="grid grid-cols-2 gap-2">
           <Link
             href={`/araclar/${car.id}`}
-            className="inline-flex items-center justify-center px-3 py-2 rounded-xl bg-surface-elevated hover:bg-border text-main font-semibold text-xs transition-colors border border-border"
+            className="min-h-11 inline-flex items-center justify-center px-3 py-2 rounded-xl bg-surface-elevated hover:bg-border text-main font-semibold text-xs transition-colors border border-border"
           >
             Detay İncele
           </Link>
@@ -135,7 +135,7 @@ export function CarCard({ car }: CarCardProps) {
           <button
             type="button"
             onClick={handleCompareClick}
-            className={`inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl font-semibold text-xs transition-all ${
+            className={`min-h-11 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl font-semibold text-xs transition-all ${
               compared
                 ? "bg-primary text-white shadow-sm"
                 : "bg-surface-elevated hover:bg-primary/10 text-muted hover:text-primary border border-border"

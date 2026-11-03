@@ -85,7 +85,7 @@ export default async function CarDetailPage({
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-main tracking-tight mb-4">
+              <h1 className="text-2xl sm:text-4xl font-extrabold font-heading text-main tracking-tight mb-4 break-words [overflow-wrap:anywhere]">
                 {car.model}
               </h1>
 
@@ -93,7 +93,7 @@ export default async function CarDetailPage({
                 <span className="block text-xs text-muted mb-1">
                   Tahmini Piyasa Değer Aralığı
                 </span>
-                <span className="text-2xl sm:text-3xl font-black font-heading text-main">
+                <span className="text-2xl sm:text-3xl font-black font-heading text-main break-words [overflow-wrap:anywhere]">
                   {formatPrice(car.fiyatMin)} - {formatPrice(car.fiyatMax)}
                 </span>
               </div>

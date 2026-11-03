@@ -12,7 +12,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={theme === "dark" ? "Açık temaya geç" : "Koyu temaya geç"}
       title={theme === "dark" ? "Açık tema" : "Koyu tema"}
-      className="inline-flex items-center justify-center p-2 rounded-lg text-muted hover:text-main hover:bg-surface-elevated transition-colors border border-border"
+      className="min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-lg text-muted hover:text-main hover:bg-surface-elevated transition-colors border border-border"
     >
       {theme === "dark" ? (
         // Sun icon

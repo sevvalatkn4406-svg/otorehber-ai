@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
@@ -15,14 +15,28 @@ const NAV_LINKS = [
 ];
 
 export function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [openPath, setOpenPath] = useState<string | null>(null);
   const pathname = usePathname();
+  const isOpen = openPath === pathname;
 
-  const toggleMenu = () => setIsOpen((prev) => !prev);
-  const closeMenu = () => setIsOpen(false);
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenPath(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
+  const toggleMenu = () => setOpenPath((prev) => prev === pathname ? null : pathname);
+  const closeMenu = () => setOpenPath(null);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-surface/90 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-surface/90 backdrop-blur-none md:backdrop-blur-md transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
@@ -67,15 +81,15 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav
             aria-label="Ana Menü"
-            className="hidden md:flex items-center gap-1 lg:gap-2"
+            className="hidden md:flex items-center gap-0 lg:gap-2"
           >
             {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-1.5 lg:px-3 py-1.5 rounded-md text-xs lg:text-sm font-medium transition-colors ${
                     isActive
                       ? "text-primary bg-primary/10 font-semibold"
                       : "text-muted hover:text-main hover:bg-surface-elevated"
@@ -89,7 +103,7 @@ export function Header() {
 
           {/* Actions: Theme Toggle & Mobile Menu Button */}
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <div className="hidden md:block"><ThemeToggle /></div>
 
             {/* Mobile menu hamburger button */}
             <button
@@ -98,7 +112,7 @@ export function Header() {
               aria-expanded={isOpen}
               aria-controls="mobile-navigation"
               aria-label={isOpen ? "Menüyü Kapat" : "Menüyü Aç"}
-              className="md:hidden p-2 rounded-lg text-muted hover:text-main hover:bg-surface-elevated border border-border transition-colors"
+              className="md:hidden min-h-11 min-w-11 p-2 rounded-lg text-muted hover:text-main hover:bg-surface-elevated border border-border transition-colors"
             >
               {isOpen ? (
                 // Close X icon
@@ -130,20 +144,22 @@ export function Header() {
         </div>
 
         {/* Mobile Navigation Dropdown */}
-        {isOpen && (
+        <div id="mobile-navigation" className={`${isOpen ? "block" : "hidden"} md:hidden fixed inset-x-0 top-16 bottom-0 z-50`}>
+          <button type="button" tabIndex={-1} aria-label="Menüyü kapat" onClick={closeMenu} className="absolute inset-0 w-full bg-black/40" />
           <nav
-            id="mobile-navigation"
             aria-label="Mobil Menü"
-            className="md:hidden py-4 border-t border-border flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-150"
+            onClick={(event) => event.stopPropagation()}
+            className="relative w-full bg-surface border-b border-border shadow-xl px-4 py-4 flex flex-col gap-1 max-h-[calc(100dvh-4rem)] overflow-y-auto"
           >
             {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={closeMenu}
-                  className={`px-3.5 py-2.5 rounded-lg text-base font-medium transition-colors ${
+                  aria-current={isActive ? "page" : undefined}
+                  className={`min-h-11 flex items-center px-3.5 py-2.5 rounded-lg text-base font-medium transition-colors ${
                     isActive
                       ? "text-primary bg-primary/10 font-semibold"
                       : "text-muted hover:text-main hover:bg-surface-elevated"
@@ -153,8 +169,9 @@ export function Header() {
                 </Link>
               );
             })}
+            <div className="border-t border-border mt-2 pt-3"><ThemeToggle /></div>
           </nav>
-        )}
+        </div>
       </div>
     </header>
   );
