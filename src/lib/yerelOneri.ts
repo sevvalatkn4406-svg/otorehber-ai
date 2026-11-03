@@ -136,7 +136,15 @@ export function yerelAracOnerisi(girdi: OneriGirdisi): OneriCiktisi {
   });
 
   // Genel tavsiye cümlesi
-  const oncelikMetin = oncelikler.length > 0 ? oncelikler.join(", ") : "genel dengeli kullanım";
+  const oncelikAdlari: Record<string, string> = {
+    "yakit-ekonomisi": "yakıt ekonomisi",
+    guvenlik: "güvenlik",
+    performans: "performans",
+    konfor: "konfor",
+  };
+  const oncelikMetin = oncelikler.length > 0
+    ? oncelikler.map((oncelik) => oncelikAdlari[oncelik] ?? oncelik).join(", ")
+    : "genel dengeli kullanım";
   const genelTavsiye = `Belirttiğiniz ${butce.toLocaleString("tr-TR")} ₺ bütçe, günlük ${gunlukKm} km rota ve "${oncelikMetin}" beklentileriniz doğrultusunda seçilen bu 3 alternatif, toplam sahip olma ve yürütme maliyeti açısından en mantıklı modellerdir.`;
 
   return {

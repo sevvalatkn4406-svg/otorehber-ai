@@ -6,16 +6,28 @@ type Neden = "anahtar-yok" | "zaman-asimi" | "api-hatasi" | "bos-cevap" | "gecer
 type GeminiSonuc = { ok: true; data: unknown } | { ok: false; neden: Neden };
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status });
 const isNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const readablePriority = (text: string) => text
+  .replaceAll("yakit-ekonomisi", "yakıt ekonomisi")
+  .replaceAll("guvenlik", "güvenlik")
+  .replaceAll("performans", "performans")
+  .replaceAll("konfor", "konfor");
 
 async function gemini(prompt: string, apiKey: string, model: string): Promise<GeminiSonuc> {
   let activeModel = model;
   for (let attempt = 0; attempt < 2; attempt++) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const timeout = setTimeout(() => controller.abort(), 20_000);
     try {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent`, {
         method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            maxOutputTokens: 1200,
+            thinkingConfig: activeModel.startsWith("gemini-2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "low" },
+          },
+        }),
         signal: controller.signal,
       });
       const payload = await res.json().catch(() => null);
@@ -58,7 +70,7 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(body.oncelikler) || body.oncelikler.length > 4 || body.oncelikler.some((x) => typeof x !== "string" || !priorities.includes(x))) return fail(400, "Öncelik seçimleri geçersiz.");
     if (typeof body.not !== "string" || body.not.length > 500) return fail(400, "Ek not en fazla 500 karakter olabilir.");
     veri = { butce: body.butce, gunlukKm: body.gunlukKm, aileDurumu: body.aileDurumu as OneriGirdisi["aileDurumu"], oncelikler: body.oncelikler as string[], not: body.not };
-    prompt = `Türkçe yanıt ver. Bu listedeki araçlardan en uygun 3 tanesini seç ve sadece JSON döndür: {"onerilenAraclar":[{"id":"araç id","marka":"marka","model":"model","gerekce":"Türkçe gerekçe"}],"genelTavsiye":"Türkçe tavsiye"}. Liste: ${JSON.stringify(carsData.map(({id,marka,model,fiyatMin,fiyatMax,yakit,etiketler})=>({id,marka,model,fiyatMin,fiyatMax,yakit,etiketler})))} Profil: ${JSON.stringify(veri)}`;
+    prompt = `Türkçe yanıt ver. Öncelikleri kullanıcıya gösterirken yakıt ekonomisi, güvenlik, performans, konfor olarak yaz; yakit-ekonomisi veya guvenlik kodlarını metne koyma. Bu listedeki araçlardan en uygun 3 tanesini seç ve sadece JSON döndür: {"onerilenAraclar":[{"id":"araç id","marka":"marka","model":"model","gerekce":"Türkçe gerekçe"}],"genelTavsiye":"Türkçe tavsiye"}. Listede olmayan id üretme. Araçlar: ${JSON.stringify(carsData.map(({id,marka,model,kasaTipi,yakit,fiyatMin,fiyatMax,etiketler})=>({id,marka,model,kasa:kasaTipi,yakit,fiyatAraligi:[fiyatMin,fiyatMax],etiketler})))} Profil: ${JSON.stringify(veri)}`;
   } else {
     if (typeof body.aracModeli !== "string" || !body.aracModeli.trim() || body.aracModeli.length > 100) return fail(400, "Araç modeli 1–100 karakter olmalıdır.");
     if (!isNumber(body.km) || body.km < 0 || body.km > 2000000) return fail(400, "Kilometre 0–2.000.000 arasında olmalıdır.");
@@ -88,6 +100,12 @@ export async function POST(req: NextRequest) {
   } else {
     const data = result.data as { aracBilgisi?: unknown; kalemler?: unknown; tavsiyeler?: unknown };
     if (typeof data?.aracBilgisi !== "string" || !Array.isArray(data.kalemler) || !Array.isArray(data.tavsiyeler)) return NextResponse.json({ kaynak: "yerel", veri: local(), neden: "gecersiz-cevap", not: "AI yanıtı doğrulanamadı, yerel bakım planı kullanıldı." });
+  }
+  if (mod === "oneri") {
+    const resultData = result.data as { genelTavsiye: string; onerilenAraclar: Array<{ gerekce: string }> };
+    resultData.genelTavsiye = readablePriority(resultData.genelTavsiye);
+    resultData.onerilenAraclar = resultData.onerilenAraclar.map((car) => ({ ...car, gerekce: readablePriority(car.gerekce) }));
+    result.data = resultData;
   }
   return NextResponse.json({ kaynak: "gemini", veri: result.data });
 }

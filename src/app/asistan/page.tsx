@@ -66,7 +66,7 @@ function AsistanContent() {
     setOneriYukleniyor(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       const payload = {
@@ -101,7 +101,7 @@ function AsistanContent() {
       setOneriSonucu(json);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        setOneriHata("İstek zaman aşımına uğradı (20 saniye). Lütfen tekrar deneyiniz.");
+        setOneriHata("İstek zaman aşımına uğradı (30 saniye). Lütfen tekrar deneyiniz.");
       } else {
         const msg = err instanceof Error ? err.message : "Öneri hazırlanırken bir hata oluştu.";
         setOneriHata(msg);
@@ -119,7 +119,7 @@ function AsistanContent() {
     setBakimYukleniyor(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       const payload = {
@@ -153,7 +153,7 @@ function AsistanContent() {
       setBakimSonucu(json);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        setBakimHata("İstek zaman aşımına uğradı (20 saniye). Lütfen tekrar deneyiniz.");
+        setBakimHata("İstek zaman aşımına uğradı (30 saniye). Lütfen tekrar deneyiniz.");
       } else {
         const msg = err instanceof Error ? err.message : "Bakım planı alınırken bir hata oluştu.";
         setBakimHata(msg);
