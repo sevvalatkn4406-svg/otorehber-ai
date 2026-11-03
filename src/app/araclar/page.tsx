@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { carsData, KasaTipi } from "@/data/cars";
+import React, { useState, useMemo, useEffect } from "react";
+import { carsData, type Car } from "@/data/cars";
+import { filtreleAraclar, type AracSiralama } from "@/lib/filtrele";
 import { CarCard } from "@/components/CarCard";
 import { CompareFloatingBar } from "@/components/CompareFloatingBar";
 import { useGarage } from "@/lib/storage";
@@ -12,72 +13,30 @@ export default function AraclarPage() {
   // Tabs: "tum" | "garajim"
   const [activeTab, setActiveTab] = useState<"tum" | "garajim">("tum");
 
-  // Filters
+  const floor = Math.min(...carsData.map((c) => c.fiyatMin));
+  const ceiling = Math.max(...carsData.map((c) => c.fiyatMax));
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [selectedMarka, setSelectedMarka] = useState<string>("all");
-  const [selectedKasa, setSelectedKasa] = useState<string>("all");
-
-  // Unique brands list
-  const markalar = useMemo(() => {
-    const set = new Set(carsData.map((c) => c.marka));
-    return Array.from(set).sort();
-  }, []);
-
-  // Unique body types
-  const kasaTipleri: { value: KasaTipi | "all"; label: string }[] = [
-    { value: "all", label: "Tüm Kasa Tipleri" },
-    { value: "sedan", label: "Sedan" },
-    { value: "hatchback", label: "Hatchback" },
-    { value: "suv", label: "SUV" },
-    { value: "elektrikli", label: "Elektrikli" },
-    { value: "station-wagon", label: "Station Wagon" },
-    { value: "pickup", label: "Pickup" },
-  ];
-
-  // Handle Search Submission (Only filters when "Ara" button or Enter is pressed)
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAppliedSearch(searchInput.trim().toLowerCase());
-  };
-
-  const handleResetFilters = () => {
-    setSearchInput("");
-    setAppliedSearch("");
-    setSelectedMarka("all");
-    setSelectedKasa("all");
-  };
-
-  // Filtered cars
-  const filteredCars = useMemo(() => {
-    const sourceList =
-      activeTab === "garajim"
-        ? carsData.filter((c) => favorites.includes(c.id))
-        : carsData;
-
-    return sourceList.filter((car) => {
-      // 1. Text search (marka / model)
-      if (appliedSearch) {
-        const fullTitle = `${car.marka} ${car.model}`.toLowerCase();
-        if (!fullTitle.includes(appliedSearch)) return false;
-      }
-
-      // 2. Marka filter
-      if (selectedMarka !== "all" && car.marka !== selectedMarka) {
-        return false;
-      }
-
-      // 3. Kasa tipi filter
-      if (selectedKasa !== "all" && car.kasaTipi !== selectedKasa) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [activeTab, favorites, appliedSearch, selectedMarka, selectedKasa]);
-
-  const hasActiveFilters =
-    appliedSearch !== "" || selectedMarka !== "all" || selectedKasa !== "all";
+  const [brands, setBrands] = useState<string[]>([]);
+  const [bodies, setBodies] = useState<Car["kasaTipi"][]>([]);
+  const [fuels, setFuels] = useState<Car["yakit"][]>([]);
+  const [transmissions, setTransmissions] = useState<Car["vites"][]>([]);
+  const [priceMin, setPriceMin] = useState(floor), [priceMax, setPriceMax] = useState(ceiling);
+  const [sort, setSort] = useState<AracSiralama>("onerilen");
+  const [panelOpen, setPanelOpen] = useState(false);
+  useEffect(() => { const timer = window.setTimeout(() => setAppliedSearch(searchInput.trim()), 300); return () => window.clearTimeout(timer); }, [searchInput]);
+  const brandsList = useMemo(() => Array.from(new Set(carsData.map((c) => c.marka))).sort(), []);
+  const bodyList: {value: Car["kasaTipi"]; label: string}[] = [{value:"sedan",label:"Sedan"},{value:"hatchback",label:"Hatchback"},{value:"suv",label:"SUV"},{value:"elektrikli",label:"Elektrikli"},{value:"station-wagon",label:"Station Wagon"},{value:"pickup",label:"Pickup"}];
+  const fuelList: {value: Car["yakit"];label:string}[] = [{value:"benzin",label:"Benzin"},{value:"dizel",label:"Dizel"},{value:"hibrit",label:"Hibrit"},{value:"elektrik",label:"Elektrik"}];
+  const transmissionList: {value: Car["vites"];label:string}[] = [{value:"manuel",label:"Manuel"},{value:"otomatik",label:"Otomatik"}];
+  const money = (n: number) => `${new Intl.NumberFormat("tr-TR").format(n)} \u20ba`;
+  const toggle = <T extends string>(arr:T[],v:T,set:(v:T[])=>void) => set(arr.includes(v)?arr.filter(x=>x!==v):[...arr,v]);
+  const handleResetFilters = () => { setSearchInput("");setAppliedSearch("");setBrands([]);setBodies([]);setFuels([]);setTransmissions([]);setPriceMin(floor);setPriceMax(ceiling);setSort("onerilen"); };
+  const sourceList = activeTab === "garajim" ? carsData.filter(c=>favorites.includes(c.id)) : carsData;
+  const filteredCars = useMemo(() => filtreleAraclar(sourceList,{arama:appliedSearch,markalar:brands,kasaTipleri:bodies,yakitTipleri:fuels,vitesTipleri:transmissions,fiyatMin:priceMin,fiyatMax:priceMax,siralama:sort}),[sourceList,appliedSearch,brands,bodies,fuels,transmissions,priceMin,priceMax,sort]);
+  const activeCount=brands.length+bodies.length+fuels.length+transmissions.length+(appliedSearch?1:0)+(priceMin!==floor||priceMax!==ceiling?1:0);
+  const hasActiveFilters=activeCount>0;
+  const chip=(on:boolean)=>"px-3 py-1.5 rounded-full border text-xs font-semibold "+(on?"bg-primary text-white border-primary":"bg-surface-elevated text-main border-border hover:border-primary");
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-28">
@@ -154,112 +113,36 @@ export default function AraclarPage() {
         </button>
       </div>
 
-      {/* Filter Bar (Text search + Ara button, Marka select, Kasa tipi select) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border shadow-sm mb-8">
-        <form
-          onSubmit={handleSearchSubmit}
-          className="grid grid-cols-1 sm:grid-cols-12 gap-3.5"
-        >
-          {/* Text search input & button */}
-          <div className="sm:col-span-6 flex gap-2">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Marka veya model ara (örn. Corolla, Togg, SUV)..."
-                className="w-full pl-3.5 pr-8 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => setSearchInput("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-main text-sm"
-                  aria-label="Arama kutusunu temizle"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition-colors shrink-0 shadow-sm"
-            >
-              Ara
-            </button>
-          </div>
-
-          {/* Marka Dropdown */}
-          <div className="sm:col-span-3">
-            <select
-              value={selectedMarka}
-              onChange={(e) => setSelectedMarka(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-main focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Marka Seçimi"
-            >
-              <option value="all">Tüm Markalar</option>
-              {markalar.map((marka) => (
-                <option key={marka} value={marka}>
-                  {marka}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Kasa Tipi Dropdown */}
-          <div className="sm:col-span-3">
-            <select
-              value={selectedKasa}
-              onChange={(e) => setSelectedKasa(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-main focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Kasa Tipi Seçimi"
-            >
-              {kasaTipleri.map((kasa) => (
-                <option key={kasa.value} value={kasa.value}>
-                  {kasa.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </form>
-
-        {/* Active Filter Info & Reset Button */}
-        {hasActiveFilters && (
-          <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span>Aktif Filtreler:</span>
-              {appliedSearch && (
-                <span className="px-2 py-0.5 rounded bg-surface-elevated text-main font-medium">
-                  Metin: &ldquo;{appliedSearch}&rdquo;
-                </span>
-              )}
-              {selectedMarka !== "all" && (
-                <span className="px-2 py-0.5 rounded bg-surface-elevated text-main font-medium">
-                  Marka: {selectedMarka}
-                </span>
-              )}
-              {selectedKasa !== "all" && (
-                <span className="px-2 py-0.5 rounded bg-surface-elevated text-main font-medium capitalize">
-                  Kasa: {selectedKasa}
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="font-semibold text-primary hover:underline ml-auto"
-            >
-              Filtreleri Sıfırla
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Results Count */}
-      <div className="mb-4 text-xs font-semibold text-muted">
-        Gösterilen: <span className="text-main font-bold">{filteredCars.length}</span> araç
-      </div>
+      <section className="p-4 sm:p-5 rounded-2xl bg-surface border border-border shadow-sm mb-6" aria-label="Ara&#231; filtreleri">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <button type="button" onClick={()=>setPanelOpen(!panelOpen)} aria-expanded={panelOpen} className="md:hidden px-4 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm">Filtreler ({activeCount})</button>
+          <div className="relative min-w-[min(100%,280px)] flex-1"><input type="search" value={searchInput} onChange={e=>setSearchInput(e.target.value)} placeholder="Marka veya model ara (&#246;rn. Corolla, Togg)..." aria-label="Marka veya model ara" className="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-main placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"/>
+          {searchInput&&<button type="button" onClick={()=>setSearchInput("")} aria-label="Arama kutusunu temizle" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted text-lg">×</button>}</div>
+          <label className="text-sm text-muted flex items-center gap-2">Sıralama<select value={sort} onChange={e=>setSort(e.target.value as AracSiralama)} className="px-3 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-main"><option value="onerilen">Önerilen</option><option value="fiyat-artan">Fiyat (artan)</option><option value="fiyat-azalan">Fiyat (azalan)</option><option value="motor-gucu">Motor gücü</option><option value="tuketim">Yakıt tüketimi</option></select></label>
+        </div>
+        <div className={(panelOpen?"block":"hidden")+" md:block"}><div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {[
+            {label:"Marka",values:brandsList,selected:brands,toggle:(v:string)=>toggle(brands,v,setBrands)},
+            {label:"Kasa tipi",values:bodyList.map(x=>x.value),selected:bodies,toggle:(v:string)=>toggle(bodies,v as Car["kasaTipi"],setBodies)},
+            {label:"Yakıt türü",values:fuelList.map(x=>x.value),selected:fuels,toggle:(v:string)=>toggle(fuels,v as Car["yakit"],setFuels)},
+            {label:"Vites",values:transmissionList.map(x=>x.value),selected:transmissions,toggle:(v:string)=>toggle(transmissions,v as Car["vites"],setTransmissions)}
+          ].map(g=><fieldset key={g.label}><legend className="text-xs font-bold text-muted mb-2">{g.label}</legend><div className="flex flex-wrap gap-2">{g.values.map(v=>{const label=[...bodyList,...fuelList,...transmissionList].find(x=>x.value===v)?.label??v;const chosen=(g.selected as string[]).includes(v);return <button type="button" key={v} aria-pressed={chosen} onClick={()=>g.toggle(v)} className={chip(chosen)}>{label}</button>})}</div></fieldset>)}
+        </div>
+        <fieldset className="mt-5 pt-4 border-t border-border"><legend className="text-xs font-bold text-muted mb-2">Fiyat aralığı</legend><div className="flex justify-between text-sm font-semibold text-main mb-2"><span>{money(priceMin)}</span><span>{money(priceMax)}</span></div><div className="grid sm:grid-cols-2 gap-4">
+          <label className="text-xs text-muted">En düşük fiyat<input type="range" min={floor} max={ceiling} step={50000} value={priceMin} onChange={e=>setPriceMin(Math.min(+e.target.value,priceMax))} aria-label="En düşük fiyat" className="block w-full accent-[var(--color-primary)]"/></label>
+          <label className="text-xs text-muted">En yüksek fiyat<input type="range" min={floor} max={ceiling} step={50000} value={priceMax} onChange={e=>setPriceMax(Math.max(+e.target.value,priceMin))} aria-label="En yüksek fiyat" className="block w-full accent-[var(--color-primary)]"/></label>
+        </div></fieldset></div>
+        {hasActiveFilters&&<div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center gap-2 text-xs"><span className="text-muted font-semibold">Aktif filtreler:</span>
+          {appliedSearch&&<button onClick={()=>setSearchInput("")} className={chip(true)}>Arama: “{appliedSearch}” ×</button>}
+          {brands.map(v=><button key={v} onClick={()=>setBrands(brands.filter(x=>x!==v))} className={chip(true)}>Marka: {v} ×</button>)}
+          {bodies.map(v=><button key={v} onClick={()=>setBodies(bodies.filter(x=>x!==v))} className={chip(true)}>Kasa: {v} ×</button>)}
+          {fuels.map(v=><button key={v} onClick={()=>setFuels(fuels.filter(x=>x!==v))} className={chip(true)}>Yakıt: {v} ×</button>)}
+          {transmissions.map(v=><button key={v} onClick={()=>setTransmissions(transmissions.filter(x=>x!==v))} className={chip(true)}>Vites: {v} ×</button>)}
+          {(priceMin!==floor||priceMax!==ceiling)&&<button onClick={()=>{setPriceMin(floor);setPriceMax(ceiling)}} className={chip(true)}>Fiyat: {money(priceMin)}–{money(priceMax)} ×</button>}
+          <button type="button" onClick={handleResetFilters} className="ml-auto font-semibold text-primary hover:underline">Tüm filtreleri temizle</button>
+        </div>}
+      </section>
+      <div className="mb-4 text-xs font-semibold text-muted" aria-live="polite">{filteredCars.length} araç bulundu</div>
 
       {/* Main Content: Vehicle Cards Grid or Empty State */}
       {filteredCars.length > 0 ? (
